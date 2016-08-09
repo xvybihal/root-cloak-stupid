@@ -1,0 +1,31 @@
+#!/system/bin/sh
+SUBIN=/system/xbin/su
+myRoot=$(which su)
+
+if [ -z ${myRoot} ]; then
+# root is disabled, enable it
+  SUBIN=/system/xbin/su.disabled
+  #check binaries
+  [ -f /system/bin/su.disabled ] || [ -f /system/xbin/su.disabled ] || exit 1
+
+  # remount system for rw
+  ${SUBIN} -c "mount -o rw,remount /system" || exit 1
+
+  # switch back to root
+  ${SUBIN} -c "mv /system/bin/su.disabled /system/bin/su" || exit 1
+  ${SUBIN} -c "mv /system/xbin/su.disabled /system/xbin/su" || exit 1
+
+  echo ":: ROOT ENABLED SUCESSFULLY" #oh... well... maybe...
+
+else
+  # disable root
+  SUBIN=/system/xbin/su
+  [ -f /system/bin/su ] || [ -f /system/xbin/su ] || exit 1
+  ${SUBIN}  -c "mount -o rw,remount /system" || exit 1
+
+  ${SUBIN} -c "mv /system/bin/su /system/bin/su.disabled" || exit 1
+  ${SUBIN} -c "mv /system/xbin/su /system/xbin/su.disabled" || exit 1
+
+  echo ":: ROOT DISABLED SUCESSFULLY"  #oh... well... maybe...
+fi
+
